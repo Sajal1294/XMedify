@@ -4,16 +4,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-// Component to search the hospitals based on State and City selection.
-// Receives state and city as props from parent to prefill values based on URL.
-
-export default function SearchHospital({ state: initialState, city: initialCity }) {
+export default function SearchHospital({ selectedState, selectedCity }) {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [formData, setFormData] = useState({ state: initialState || "", city: initialCity || "" });
+  const [formData, setFormData] = useState({
+    state: selectedState || "",
+    city: selectedCity || "",
+  });
   const navigate = useNavigate();
 
-  // Fetch list of states on mount
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -29,7 +28,6 @@ export default function SearchHospital({ state: initialState, city: initialCity 
     fetchStates();
   }, []);
 
-  // Fetch cities when the selected state changes
   useEffect(() => {
     const fetchCities = async () => {
       setCities([]);
@@ -49,13 +47,16 @@ export default function SearchHospital({ state: initialState, city: initialCity 
     }
   }, [formData.state]);
 
-  // Update form data on user selection
+  // Update formData when props change (sync with URL params)
+  useEffect(() => {
+    setFormData({ state: selectedState || "", city: selectedCity || "" });
+  }, [selectedState, selectedCity]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Navigate with selected state and city
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.state && formData.city) {
@@ -111,7 +112,6 @@ export default function SearchHospital({ state: initialState, city: initialCity 
         }
         required
         sx={{ minWidth: 200, width: "100%" }}
-        disabled={!formData.state}
       >
         <MenuItem disabled value="">
           City
