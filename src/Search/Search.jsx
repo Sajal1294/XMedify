@@ -13,8 +13,8 @@ import NavBar from "../components/NavBar/NavBar";
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [hospitals, setHospitals] = useState([]);
-  const [state, setState] = useState(searchParams.get("state"));
-  const [city, setCity] = useState(searchParams.get("city"));
+  const [state, setState] = useState(searchParams.get("state") || "");
+  const [city, setCity] = useState(searchParams.get("city") || "");
 
   const availableSlots = {
     morning: ["11:30 AM"],
@@ -27,31 +27,38 @@ export default function Search() {
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Sync state and city from URL params when they change
   useEffect(() => {
-    const getHospitals = async () => {
+    const paramState = searchParams.get("state") || "";
+    const paramCity = searchParams.get("city") || "";
+
+    if (paramState !== state) setState(paramState);
+    if (paramCity !== city) setCity(paramCity);
+  }, [searchParams]);
+
+  // Fetch hospitals when both state & city are available
+  useEffect(() => {
+    if (!state || !city) {
       setHospitals([]);
+      return;
+    }
+
+    const fetchHospitals = async () => {
       setIsLoading(true);
       try {
-        const data = await axios.get(
+        const response = await axios.get(
           `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
         );
-        setHospitals(data.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.log(err);
-        setIsLoading(false);
+        setHospitals(response.data);
+      } catch (error) {
+        console.error("Error fetching hospitals:", error);
+        setHospitals([]);
       }
+      setIsLoading(false);
     };
 
-    if (state && city) {
-      getHospitals();
-    }
+    fetchHospitals();
   }, [state, city]);
-
-  useEffect(() => {
-    setState(searchParams.get("state"));
-    setCity(searchParams.get("city"));
-  }, [searchParams]);
 
   const handleBookingModal = (details) => {
     setBookingDetails(details);
@@ -116,34 +123,64 @@ export default function Search() {
             </Box>
           )}
 
-          <Stack alignItems="flex-start" direction={{ md: "row" }}>
+          {isLoading && (
+            <Typography
+              variant="h4"
+              bgcolor="#fff"
+              p={3}
+              borderRadius={2}
+              textAlign="center"
+              my={5}
+            >
+              Loading...
+            </Typography>
+          )}
+
+          {!isLoading && hospitals.length === 0 && state && city && (
+            <Typography
+              variant="h5"
+              bgcolor="#fff"
+              p={3}
+              borderRadius={2}
+              textAlign="center"
+              my={5}
+            >
+              No medical centers found for the selected city and state.
+            </Typography>
+          )}
+
+          {!state && !city && (
+            <Typography
+              variant="h5"
+              bgcolor="#fff"
+              p={3}
+              borderRadius={2}
+              textAlign="center"
+              my={5}
+            >
+              Please select a state and city.
+            </Typography>
+          )}
+
+          <Stack
+            alignItems="flex-start"
+            direction={{ md: "row" }}
+            spacing={3}
+            mt={2}
+          >
             <Stack
-              mb={{ xs: 4, md: 0 }}
               spacing={3}
-              width={{ xs: 1, md: "calc(100% - 384px)" }}
+              width={{ xs: "100%", md: "calc(100% - 384px)" }}
               mr="24px"
             >
-              {hospitals.length > 0 &&
-                hospitals.map((hospital) => (
-                  <HospitalCard
-                    key={hospital["Hospital Name"]}
-                    details={hospital}
-                    availableSlots={availableSlots}
-                    handleBooking={handleBookingModal}
-                  />
-                ))}
-
-              {isLoading && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  Loading...
-                </Typography>
-              )}
-
-              {!state && (
-                <Typography variant="h3" bgcolor="#fff" p={3} borderRadius={2}>
-                  Please select a state and city
-                </Typography>
-              )}
+              {hospitals.map((hospital) => (
+                <HospitalCard
+                  key={hospital["Hospital Name"]}
+                  details={hospital}
+                  availableSlots={availableSlots}
+                  handleBooking={handleBookingModal}
+                />
+              ))}
             </Stack>
 
             <img src={cta} width={360} height="auto" alt="banner" />

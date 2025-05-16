@@ -4,13 +4,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export default function SearchHospital({ selectedState, selectedCity }) {
+//Component to search the hospitals based on State and City selection.
+//API used to fetch details of hospital and set the values in formData
+export default function SearchHospital() {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [formData, setFormData] = useState({
-    state: selectedState || "",
-    city: selectedCity || "",
-  });
+  const [formData, setFormData] = useState({ state: "", city: "" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,20 +36,16 @@ export default function SearchHospital({ selectedState, selectedCity }) {
           `https://meddata-backend.onrender.com/cities/${formData.state}`
         );
         setCities(data.data);
+        // console.log("city", data.data);
       } catch (error) {
         console.log("Error in fetching city:", error);
       }
     };
 
-    if (formData.state !== "") {
+    if (formData.state != "") {
       fetchCities();
     }
   }, [formData.state]);
-
-  // Update formData when props change (sync with URL params)
-  useEffect(() => {
-    setFormData({ state: selectedState || "", city: selectedCity || "" });
-  }, [selectedState, selectedCity]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,7 +84,7 @@ export default function SearchHospital({ selectedState, selectedCity }) {
         required
         sx={{ minWidth: 200, width: "100%" }}
       >
-        <MenuItem disabled value="">
+        <MenuItem disabled value="" selected>
           State
         </MenuItem>
         {states.map((state) => (
@@ -113,7 +108,7 @@ export default function SearchHospital({ selectedState, selectedCity }) {
         required
         sx={{ minWidth: 200, width: "100%" }}
       >
-        <MenuItem disabled value="">
+        <MenuItem disabled value="" selected>
           City
         </MenuItem>
         {cities.map((city) => (
