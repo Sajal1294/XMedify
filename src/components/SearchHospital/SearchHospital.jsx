@@ -4,14 +4,16 @@ import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-//Component to search the hospitals based on State and City selection.
-//API used to fetch details of hospital and set the values in formData
-export default function SearchHospital() {
+// Component to search the hospitals based on State and City selection.
+// Receives state and city as props from parent to prefill values based on URL.
+
+export default function SearchHospital({ state: initialState, city: initialCity }) {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [formData, setFormData] = useState({ state: "", city: "" });
+  const [formData, setFormData] = useState({ state: initialState || "", city: initialCity || "" });
   const navigate = useNavigate();
 
+  // Fetch list of states on mount
   useEffect(() => {
     const fetchStates = async () => {
       try {
@@ -27,6 +29,7 @@ export default function SearchHospital() {
     fetchStates();
   }, []);
 
+  // Fetch cities when the selected state changes
   useEffect(() => {
     const fetchCities = async () => {
       setCities([]);
@@ -36,22 +39,23 @@ export default function SearchHospital() {
           `https://meddata-backend.onrender.com/cities/${formData.state}`
         );
         setCities(data.data);
-        // console.log("city", data.data);
       } catch (error) {
         console.log("Error in fetching city:", error);
       }
     };
 
-    if (formData.state != "") {
+    if (formData.state !== "") {
       fetchCities();
     }
   }, [formData.state]);
 
+  // Update form data on user selection
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Navigate with selected state and city
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.state && formData.city) {
@@ -84,7 +88,7 @@ export default function SearchHospital() {
         required
         sx={{ minWidth: 200, width: "100%" }}
       >
-        <MenuItem disabled value="" selected>
+        <MenuItem disabled value="">
           State
         </MenuItem>
         {states.map((state) => (
@@ -107,8 +111,9 @@ export default function SearchHospital() {
         }
         required
         sx={{ minWidth: 200, width: "100%" }}
+        disabled={!formData.state}
       >
-        <MenuItem disabled value="" selected>
+        <MenuItem disabled value="">
           City
         </MenuItem>
         {cities.map((city) => (

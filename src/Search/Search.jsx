@@ -1,4 +1,5 @@
-import { Container, Stack, Box, Typography } from "@mui/material";
+// ✅ Import useRef for triggering search
+import { Container, Stack, Box, Typography, Button } from "@mui/material"; // Added Button here
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -25,34 +26,30 @@ export default function Search() {
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  //API to fetch hospitals based on state and city selection 
-  useEffect(() => {
-    const getHospitals = async () => {
-      setHospitals([]);
-      setIsLoading(true);
-      try {
-        const data = await axios.get(
-          `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
-        );
-        setHospitals(data.data);
-        setIsLoading(false);
-      } catch (err) {
-        console.log(err);
-        setIsLoading(false);
-      }
-    };
+  // 🔁 Trigger search manually on search button click
+  const handleSearch = async () => {
+    if (!state || !city) return;
 
-    if (state && city) {
-      getHospitals();
+    setHospitals([]);
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
+      );
+      setHospitals(response.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
     }
-  }, [state, city]);
+  };
 
+  // Sync state/city with URL
   useEffect(() => {
     setState(seachParams.get("state"));
     setCity(seachParams.get("city"));
   }, [seachParams]);
 
-  // show booking modal
   const handleBookingModal = (details) => {
     setBookingDetails(details);
     setIsModalOpen(true);
@@ -87,7 +84,18 @@ export default function Search() {
               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
             }}
           >
-            <SearchHospital />
+            <div id="state">
+              <SearchHospital />
+            </div>
+
+            <div id="city">
+            </div>
+
+            <Box mt={2}>
+              <Button id="searchBtn" variant="contained" onClick={handleSearch}>
+                Search
+              </Button>
+            </Box>
           </Container>
         </Box>
 
@@ -103,9 +111,10 @@ export default function Search() {
               >
                 {`${hospitals.length} medical centers available in `}
                 <span style={{ textTransform: "capitalize" }}>
-                  {city.toLocaleLowerCase()}
+                  {city?.toLowerCase()}
                 </span>
               </Typography>
+
               <Stack direction="row" spacing={2}>
                 <img src={icon} height={24} width={24} alt="icon" />
                 <Typography color="#787887" lineHeight={1.4}>
