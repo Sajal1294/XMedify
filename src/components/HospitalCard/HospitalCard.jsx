@@ -88,7 +88,7 @@ export default function HospitalCard({
               color="#fff"
               sx={{ opacity: 0.5 }}
             >
-              {details["Hospital overall rating"] == "Not Available"
+              {details["Hospital overall rating"] === "Not Available"
                 ? 0
                 : details["Hospital overall rating"]}
             </Typography>
@@ -122,7 +122,7 @@ export default function HospitalCard({
             </>
           )}
 
-          {booking && (
+          {booking && details.bookingTime && details.bookingDate ? (
             <Stack direction="row" spacing={1} mt={{ xs: 2, md: 0 }}>
               <Chip
                 label={details.bookingTime}
@@ -143,6 +143,16 @@ export default function HospitalCard({
                 }}
               />
             </Stack>
+          ) : (
+            // ✅ Button required to trigger modal when booking is true
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2 }}
+              onClick={() => handleBooking(details)}
+            >
+              Book FREE Center Visit
+            </Button>
           )}
         </Stack>
       </Stack>
