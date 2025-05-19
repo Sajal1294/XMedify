@@ -1,7 +1,6 @@
 // Home.jsx
 import { Container, Box, Stack } from "@mui/material";
 import HeroSlider from "../components/HeroSlider/HeroSlider";
-import SearchHospital from "../components/SearchHospital/SearchHospital";
 import FAQs from "../components/Sections/FAQs/FAQs";
 import OurFamilies from "../components/Sections/OurFamilies/OurFamilies";
 import Blogs from "../components/Sections/Blogs/Blogs";
@@ -11,21 +10,9 @@ import Specialization from "../components/Sections/Specialization/Specialization
 import Offers from "../components/Sections/Offers/Offers";
 import NavBar from "../components/NavBar/NavBar";
 import HeroServices from "../components/IconLayout/HeroServices";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import Search from "../Search/Search";
 
 export default function Home() {
-  const [homeState, setHomeState] = useState("");
-  const [homeCity, setHomeCity] = useState("");
-  const navigate = useNavigate();
-
-  const handleSearch = (searchParams) => {
-    const { state, city } = searchParams;
-    if (state && city) {
-      navigate(`/search?state=${state}&city=${city}`);
-    }
-  };
-
   return (
     <Box>
       <Box
@@ -51,14 +38,7 @@ export default function Home() {
             alignItems={{ md: 'center' }}
           >
             <Box flex={1}>
-              {/* This SearchHospital is for the overlay on the HeroSlider */}
-              <SearchHospital
-                selectedState={homeState}
-                selectedCity={homeCity}
-                setState={setHomeState}
-                setCity={setHomeCity}
-                setSearchParams={handleSearch}
-              />
+              <Search/>
             </Box>
             <Box sx={{ mt: { xs: 2, md: 0 } }}>
               <HeroServices />

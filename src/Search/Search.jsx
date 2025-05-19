@@ -1,6 +1,6 @@
 import { Container, Stack, Box, Typography } from "@mui/material";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import HospitalCard from "../components/HospitalCard/HospitalCard";
 import icon from "../assets/tick.png";
@@ -12,11 +12,15 @@ import NavBar from "../components/NavBar/NavBar";
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [hospitals, setHospitals] = useState([]);
   const [state, setState] = useState(searchParams.get("state") || "");
   const [city, setCity] = useState(searchParams.get("city") || "");
-  const navigate = useNavigate();
-  const [searchTriggered, setSearchTriggered] = useState(false); // New state
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [isStatesLoading, setIsStatesLoading] = useState(true);
+  const [isCitiesLoading, setIsCitiesLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const availableSlots = {
     morning: ["11:30 AM"],
@@ -27,31 +31,83 @@ export default function Search() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({});
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSearch = (newSearchParams) => {
-    const { state: newState, city: newCity } = newSearchParams;
-    setState(newState);
-    setCity(newCity);
-    setSearchTriggered(true); // Indicate search was triggered
-    navigate(`/search?state=${newState}&city=${newCity}`);
-  };
-
+  // Fetch States
   useEffect(() => {
-    const paramState = searchParams.get("state") || "";
-    const paramCity = searchParams.get("city") || "";
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get(
+          "https://meddata-backend.onrender.com/states"
+        );
+        setStates(response.data);
+      } catch (error) {
+        console.error("Error fetching states:", error);
+      } finally {
+        setIsStatesLoading(false);
+      }
+    };
 
-    if (paramState !== state) setState(paramState);
-    if (paramCity !== city) setCity(paramCity);
-  }, [searchParams]);
+    fetchStates();
+  }, []);
 
+  // Fetch Cities
   useEffect(() => {
-    if (!state || !city) {
-      setHospitals([]);
-      return;
-    }
+    const fetchCities = async () => {
+      if (!state) {
+        setCities([]);
+        setIsCitiesLoading(false);
+        return;
+      }
+      setIsCitiesLoading(true);
+      try {
+        const response = await axios.get(
+          `https://meddata-backend.onrender.com/cities/${state}`
+        );
+        setCities(response.data);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+        setCities([]);
+      } finally {
+        setIsCitiesLoading(false);
+      }
+    };
 
+    fetchCities();
+  }, [state]);
+
+  // Update URL
+  const updateUrl = useCallback(
+    (newState, newCity) => {
+      const newParams = {};
+      if (newState) newParams.state = newState;
+      if (newCity) newParams.city = newCity;
+      const url =
+        Object.keys(newParams).length > 0
+          ? `/search?${new URLSearchParams(newParams).toString()}`
+          : "/search";
+      navigate(url, { replace: true });
+    },
+    [navigate]
+  );
+
+  // Handle Search
+  const handleSearch = useCallback(
+    (newState, newCity) => {
+      setState(newState);
+      setCity(newCity);
+      updateUrl(newState, newCity);
+    },
+    [updateUrl]
+  );
+
+  // Fetch Hospitals
+  useEffect(() => {
     const fetchHospitals = async () => {
+      if (!state || !city) {
+        setHospitals([]);
+        return;
+      }
+
       setIsLoading(true);
       try {
         const response = await axios.get(
@@ -65,11 +121,8 @@ export default function Search() {
       setIsLoading(false);
     };
 
-    if (searchTriggered) { // Only fetch if search was triggered
-      fetchHospitals();
-      setSearchTriggered(false); // Reset the trigger
-    }
-  }, [state, city, searchTriggered]);
+    fetchHospitals();
+  }, [state, city]);
 
   const handleBookingModal = (details) => {
     setBookingDetails(details);
@@ -108,9 +161,13 @@ export default function Search() {
             <SearchHospital
               selectedState={state}
               selectedCity={city}
-              setState={setState}
-              setCity={setCity}
-              setSearchParams={setSearchParams}
+              onStateChange={setState}
+              onCityChange={setCity}
+              onSearch={handleSearch}
+              states={states}
+              cities={cities}
+              isStatesLoading={isStatesLoading}
+              isCitiesLoading={isCitiesLoading}
             />
           </Container>
         </Box>
