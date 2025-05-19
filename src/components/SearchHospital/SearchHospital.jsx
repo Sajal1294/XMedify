@@ -1,16 +1,27 @@
-import { MenuItem, Select, Button, InputAdornment, Box } from "@mui/material";
+// SearchHospital.jsx
+import {
+  MenuItem,
+  Select,
+  Button,
+  InputAdornment,
+  Box,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-//Component to search the hospitals based on State and City selection.
-//API used to fetch details of hospital and set the values in formData
-export default function SearchHospital() {
+// Component to search the hospitals based on State and City selection.
+export default function SearchHospital({
+  selectedState,
+  selectedCity,
+  setState,
+  setCity,
+  setSearchParams,
+}) {
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [formData, setFormData] = useState({ state: "", city: "" });
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStates = async () => {
@@ -29,33 +40,37 @@ export default function SearchHospital() {
 
   useEffect(() => {
     const fetchCities = async () => {
-      setCities([]);
-      setFormData((prev) => ({ ...prev, city: "" }));
+      if (!selectedState) return;
       try {
-        const data = await axios.get(
-          `https://meddata-backend.onrender.com/cities/${formData.state}`
+        const response = await axios.get(
+          `https://meddata-backend.onrender.com/cities/${selectedState}`
         );
-        setCities(data.data);
-        // console.log("city", data.data);
+        setCities(response.data);
       } catch (error) {
-        console.log("Error in fetching city:", error);
+        console.error("Error fetching cities:", error);
       }
     };
 
-    if (formData.state != "") {
-      fetchCities();
-    }
-  }, [formData.state]);
+    fetchCities();
+  }, [selectedState]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleStateChange = (e) => {
+    const newState = e.target.value;
+    setState(newState);
+    setCity("");
+    setSearchParams({ state: newState, city: "" });
+  };
+
+  const handleCityChange = (e) => {
+    const newCity = e.target.value;
+    setCity(newCity);
+    setSearchParams({ state: selectedState, city: newCity });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.state && formData.city) {
-      navigate(`/search?state=${formData.state}&city=${formData.city}`);
+    if (selectedState && selectedCity) {
+      setSearchParams({ state: selectedState, city: selectedCity });
     }
   };
 
@@ -70,53 +85,61 @@ export default function SearchHospital() {
         flexDirection: { xs: "column", md: "row" },
       }}
     >
-      <Select
-        displayEmpty
-        id="state"
-        name="state"
-        value={formData.state}
-        onChange={handleChange}
-        startAdornment={
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        }
-        required
-        sx={{ minWidth: 200, width: "100%" }}
-      >
-        <MenuItem disabled value="" selected>
-          State
-        </MenuItem>
-        {states.map((state) => (
-          <MenuItem key={state} value={state}>
-            {state}
+      <FormControl fullWidth>
+        <InputLabel id="state-label">State</InputLabel>
+        <Select
+          labelId="state-label"
+          id="state"
+          name="state"
+          value={selectedState}
+          onChange={handleStateChange}
+          startAdornment={
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          }
+          label="State"
+          data-testid="state-select"
+          required
+        >
+          <MenuItem disabled value="">
+            State
           </MenuItem>
-        ))}
-      </Select>
+          {states.map((state) => (
+            <MenuItem key={state} value={state}>
+              {state}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-      <Select
-        displayEmpty
-        id="city"
-        name="city"
-        value={formData.city}
-        onChange={handleChange}
-        startAdornment={
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        }
-        required
-        sx={{ minWidth: 200, width: "100%" }}
-      >
-        <MenuItem disabled value="" selected>
-          City
-        </MenuItem>
-        {cities.map((city) => (
-          <MenuItem key={city} value={city}>
-            {city}
+      <FormControl fullWidth disabled={!selectedState}>
+        <InputLabel id="city-label">City</InputLabel>
+        <Select
+          labelId="city-label"
+          id="city"
+          name="city"
+          value={selectedCity}
+          onChange={handleCityChange}
+          startAdornment={
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          }
+          label="City"
+          data-testid="city-select"
+          required
+        >
+          <MenuItem disabled value="">
+            City
           </MenuItem>
-        ))}
-      </Select>
+          {cities.map((city) => (
+            <MenuItem key={city} value={city}>
+              {city}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
       <Button
         type="submit"
@@ -125,6 +148,7 @@ export default function SearchHospital() {
         startIcon={<SearchIcon />}
         sx={{ py: "15px", px: 8, flexShrink: 0 }}
         disableElevation
+        id="searchBtn"
       >
         Search
       </Button>
