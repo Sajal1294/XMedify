@@ -1,3 +1,4 @@
+// HospitalCard.jsx
 import icon from "../../assets/hospitalicon.png";
 import { Box, Button, Chip, Divider, Stack, Typography } from "@mui/material";
 import thumb from "../../assets/thumbsup.png";
@@ -13,8 +14,13 @@ export default function HospitalCard({
 }) {
   const [showCalendar, setShowCalendar] = useState(false);
 
+  const openBooking = () => {
+    console.log("Book button clicked for:", details["Hospital Name"]);
+    handleBooking(details);
+  };
+
   return (
-    <Box sx={{ borderRadius: 2, bgcolor: "#fff", p: { xs: 2, md: 4 } }}>
+    <Box sx={{ borderRadius: 2, bgcolor: "#fff", p: { xs: 2, md: 4 } }} data-testid="hospital-card">
       <Stack
         direction={{ xs: "column", md: "row" }}
         spacing={{ xs: 1, md: 4 }}
@@ -113,7 +119,12 @@ export default function HospitalCard({
               <Button
                 variant="contained"
                 disableElevation
-                onClick={() => setShowCalendar((prev) => !prev)}
+                onClick={() => {
+                  setShowCalendar((prev) => !prev);
+                  if (!showCalendar) { // Only call handleBooking when showing calendar
+                    openBooking();
+                  }
+                }}
                 data-testid="book-button"
               >
                 {!showCalendar

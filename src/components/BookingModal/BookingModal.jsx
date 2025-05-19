@@ -1,3 +1,4 @@
+// BookingModal.jsx
 import {
   Modal,
   Typography,

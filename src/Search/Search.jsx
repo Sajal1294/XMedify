@@ -34,7 +34,7 @@ export default function Search() {
 
     if (paramState !== state) setState(paramState);
     if (paramCity !== city) setCity(paramCity);
-  }, [searchParams]);
+  }, [searchParams, state, city]); // Added state and city dependencies
 
   useEffect(() => {
     if (!state || !city) {
@@ -45,9 +45,11 @@ export default function Search() {
     const fetchHospitals = async () => {
       setIsLoading(true);
       try {
+        console.log("Fetching hospitals for:", state, city); // Log state and city
         const response = await axios.get(
           `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
         );
+        console.log("API Response:", response.data); // Log the response
         setHospitals(response.data);
       } catch (error) {
         console.error("Error fetching hospitals:", error);

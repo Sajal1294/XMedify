@@ -1,3 +1,4 @@
+// SearchHospital.jsx
 import {
   MenuItem,
   Select,
@@ -57,13 +58,11 @@ export default function SearchHospital({
     const newState = e.target.value;
     setState(newState);
     setCity("");
-    setSearchParams({ state: newState, city: "" });
   };
 
   const handleCityChange = (e) => {
     const newCity = e.target.value;
     setCity(newCity);
-    setSearchParams({ state: selectedState, city: newCity });
   };
 
   const handleSubmit = (e) => {
@@ -79,13 +78,12 @@ export default function SearchHospital({
       onSubmit={handleSubmit}
       sx={{
         display: "flex",
-        gap: 4,
-        justifyContent: "space-between",
-        flexDirection: { xs: "column", md: "row" },
+        gap: { xs: 1, md: 2 }, // Reduced gap
+        flexDirection: "row", // Arrange items in a row
+        alignItems: "center", // Vertically align items
       }}
-      data-testid="search-hospital-form" // Added data-testid
     >
-      <FormControl fullWidth>
+      <FormControl sx={{ flexGrow: 1 }}> {/* Allow dropdowns to take up space */}
         <InputLabel id="state-label">State</InputLabel>
         <Select
           labelId="state-label"
@@ -101,6 +99,7 @@ export default function SearchHospital({
           label="State"
           data-testid="state-select"
           required
+          size="small" // Make the select smaller
         >
           <MenuItem disabled value="">
             State
@@ -113,7 +112,7 @@ export default function SearchHospital({
         </Select>
       </FormControl>
 
-      <FormControl fullWidth disabled={!selectedState}>
+      <FormControl sx={{ flexGrow: 1 }} disabled={!selectedState}>
         <InputLabel id="city-label">City</InputLabel>
         <Select
           labelId="city-label"
@@ -129,6 +128,7 @@ export default function SearchHospital({
           label="City"
           data-testid="city-select"
           required
+          size="small" // Make the select smaller
         >
           <MenuItem disabled value="">
             City
@@ -146,9 +146,9 @@ export default function SearchHospital({
         variant="contained"
         size="large"
         startIcon={<SearchIcon />}
-        sx={{ py: "15px", px: 8, flexShrink: 0 }}
+        sx={{ py: "10px", flexShrink: 0 }} // Adjust padding and prevent shrinking
         disableElevation
-        data-testid="search-button" // Added data-testid
+        data-testid="search-button"
       >
         Search
       </Button>
