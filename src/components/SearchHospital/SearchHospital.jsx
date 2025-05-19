@@ -1,4 +1,3 @@
-// SearchHospital.jsx
 import {
   MenuItem,
   Select,
@@ -84,6 +83,7 @@ export default function SearchHospital({
         justifyContent: "space-between",
         flexDirection: { xs: "column", md: "row" },
       }}
+      data-testid="search-hospital-form" // Added data-testid
     >
       <FormControl fullWidth>
         <InputLabel id="state-label">State</InputLabel>
@@ -148,7 +148,7 @@ export default function SearchHospital({
         startIcon={<SearchIcon />}
         sx={{ py: "15px", px: 8, flexShrink: 0 }}
         disableElevation
-        id="searchBtn"
+        data-testid="search-button" // Added data-testid
       >
         Search
       </Button>

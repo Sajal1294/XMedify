@@ -114,6 +114,7 @@ export default function HospitalCard({
                 variant="contained"
                 disableElevation
                 onClick={() => setShowCalendar((prev) => !prev)}
+                data-testid="book-button"
               >
                 {!showCalendar
                   ? "Book FREE Center Visit"
@@ -152,6 +153,7 @@ export default function HospitalCard({
           details={details}
           availableSlots={availableSlots}
           handleBooking={handleBooking}
+          data-testid="booking-calendar"
         />
       )}
     </Box>

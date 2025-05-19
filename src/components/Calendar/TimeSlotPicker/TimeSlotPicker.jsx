@@ -23,6 +23,7 @@ export default function TimeSlotPicker({
         mt: { xs: 1, md: 0 },
       }}
       onClick={props.handleClick}
+      data-testid={`time-slot-${props.label.replace(':', '-')}`} // Added data-testid
     />
   );
 
@@ -35,6 +36,7 @@ export default function TimeSlotPicker({
       pt={3}
       spacing={{ xs: 2, md: 3 }}
       divider={<Divider orientation="horizontal" flexItem />}
+      data-testid="time-slot-picker" // Added data-testid
     >
       {availableSlots.morning.length > 0 && (
         <Stack
@@ -80,7 +82,7 @@ export default function TimeSlotPicker({
           ))}
         </Stack>
       )}
-      {availableSlots.afternoon.length > 0 && (
+      {availableSlots.evening.length > 0 && (
         <Stack
           direction="row"
           alignItems="center"
