@@ -2,7 +2,7 @@
 import { Container, Stack, Box, Typography } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import HospitalCard from "../components/HospitalCard/HospitalCard";
 import icon from "../assets/tick.png";
 import cta from "../assets/cta.png";
@@ -16,6 +16,7 @@ export default function Search() {
   const [hospitals, setHospitals] = useState([]);
   const [state, setState] = useState(searchParams.get("state") || "");
   const [city, setCity] = useState(searchParams.get("city") || "");
+  const navigate = useNavigate();
 
   const availableSlots = {
     morning: ["11:30 AM"],
@@ -28,13 +29,20 @@ export default function Search() {
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleSearch = (newSearchParams) => {
+    const { state: newState, city: newCity } = newSearchParams;
+    setState(newState);
+    setCity(newCity);
+    navigate(`/search?state=${newState}&city=${newCity}`);
+  };
+
   useEffect(() => {
     const paramState = searchParams.get("state") || "";
     const paramCity = searchParams.get("city") || "";
 
-    if (paramState !== state) setState(paramState);
-    if (paramCity !== city) setCity(paramCity);
-  }, [searchParams, state, city]); // Added state and city dependencies
+    if (paramState) setState(paramState);
+    if (paramCity) setCity(paramCity);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!state || !city) {
@@ -45,11 +53,11 @@ export default function Search() {
     const fetchHospitals = async () => {
       setIsLoading(true);
       try {
-        console.log("Fetching hospitals for:", state, city); // Log state and city
+        console.log("Fetching hospitals for:", state, city);
         const response = await axios.get(
           `https://meddata-backend.onrender.com/data?state=${state}&city=${city}`
         );
-        console.log("API Response:", response.data); // Log the response
+        console.log("API Response:", response.data);
         setHospitals(response.data);
       } catch (error) {
         console.error("Error fetching hospitals:", error);
@@ -100,7 +108,7 @@ export default function Search() {
               selectedCity={city}
               setState={setState}
               setCity={setCity}
-              setSearchParams={setSearchParams}
+              setSearchParams={handleSearch} // Use handleSearch here
             />
           </Container>
         </Box>
