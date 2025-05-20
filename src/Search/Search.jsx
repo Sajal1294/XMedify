@@ -1,7 +1,7 @@
 import { Container, Stack, Box, Typography } from "@mui/material";
 import axios from "axios";
-import { useEffect, useState, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import HospitalCard from "../components/HospitalCard/HospitalCard";
 import icon from "../assets/tick.png";
 import cta from "../assets/cta.png";
@@ -11,16 +11,10 @@ import AutohideSnackbar from "../components/AutohideSnackbar/AutohideSnackbar";
 import NavBar from "../components/NavBar/NavBar";
 
 export default function Search() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams(); //
   const [hospitals, setHospitals] = useState([]);
   const [state, setState] = useState(searchParams.get("state") || "");
   const [city, setCity] = useState(searchParams.get("city") || "");
-  const [states, setStates] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [isStatesLoading, setIsStatesLoading] = useState(true);
-  const [isCitiesLoading, setIsCitiesLoading] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
 
   const availableSlots = {
     morning: ["11:30 AM"],
@@ -31,83 +25,25 @@ export default function Search() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({});
   const [showBookingSuccess, setShowBookingSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch States
+  // Sync state and city from URL params when they change
   useEffect(() => {
-    const fetchStates = async () => {
-      try {
-        const response = await axios.get(
-          "https://meddata-backend.onrender.com/states"
-        );
-        setStates(response.data);
-      } catch (error) {
-        console.error("Error fetching states:", error);
-      } finally {
-        setIsStatesLoading(false);
-      }
-    };
+    const paramState = searchParams.get("state") || "";
+    const paramCity = searchParams.get("city") || "";
 
-    fetchStates();
-  }, []);
+    if (paramState !== state) setState(paramState);
+    if (paramCity !== city) setCity(paramCity);
+  }, [searchParams]);
 
-  // Fetch Cities
+  // Fetch hospitals when both state & city are available
   useEffect(() => {
-    const fetchCities = async () => {
-      if (!state) {
-        setCities([]);
-        setIsCitiesLoading(false);
-        return;
-      }
-      setIsCitiesLoading(true);
-      try {
-        const response = await axios.get(
-          `https://meddata-backend.onrender.com/cities/${state}`
-        );
-        setCities(response.data);
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-        setCities([]);
-      } finally {
-        setIsCitiesLoading(false);
-      }
-    };
+    if (!state || !city) {
+      setHospitals([]);
+      return;
+    }
 
-    fetchCities();
-  }, [state]);
-
-  // Update URL
-  const updateUrl = useCallback(
-    (newState, newCity) => {
-      const newParams = {};
-      if (newState) newParams.state = newState;
-      if (newCity) newParams.city = newCity;
-      const url =
-        Object.keys(newParams).length > 0
-          ? `/search?${new URLSearchParams(newParams).toString()}`
-          : "/search";
-      navigate(url, { replace: true });
-    },
-    [navigate]
-  );
-
-  // Handle Search
-  const handleSearch = useCallback(
-    (newState, newCity) => {
-      setState(newState);
-      setCity(newCity);
-      updateUrl(newState, newCity);
-    },
-    [updateUrl]
-  );
-
-  // Fetch Hospitals
-  useEffect(() => {
     const fetchHospitals = async () => {
-      if (!state || !city) {
-        setHospitals([]);
-        return;
-      }
-
       setIsLoading(true);
       try {
         const response = await axios.get(
@@ -153,22 +89,13 @@ export default function Search() {
               background: "#fff",
               p: 3,
               borderRadius: 2,
-              transform: "translateY(50px)",
+              transform: "translatey(50px)",
               mb: "50px",
               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
             }}
           >
-            <SearchHospital
-              selectedState={state}
-              selectedCity={city}
-              onStateChange={setState}
-              onCityChange={setCity}
-              onSearch={handleSearch}
-              states={states}
-              cities={cities}
-              isStatesLoading={isStatesLoading}
-              isCitiesLoading={isCitiesLoading}
-            />
+            {/* SearchHospital component allows re-selection of state and city */}
+            <SearchHospital selectedState={state} selectedCity={city} />
           </Container>
         </Box>
 
@@ -184,7 +111,7 @@ export default function Search() {
               >
                 {`${hospitals.length} medical centers available in `}
                 <span style={{ textTransform: "capitalize" }}>
-                  {city.toLowerCase()}
+                  {city.toLocaleLowerCase()}
                 </span>
               </Typography>
               <Stack direction="row" spacing={2}>
@@ -219,7 +146,7 @@ export default function Search() {
               textAlign="center"
               my={5}
             >
-              No results found.
+              No medical centers found for the selected city and state.
             </Typography>
           )}
 
@@ -232,7 +159,7 @@ export default function Search() {
               textAlign="center"
               my={5}
             >
-              Please select a state and city to search.
+              Please select a state and city.
             </Typography>
           )}
 
@@ -246,11 +173,10 @@ export default function Search() {
               spacing={3}
               width={{ xs: "100%", md: "calc(100% - 384px)" }}
               mr="24px"
-              data-testid="hospital-list"
             >
               {hospitals.map((hospital) => (
                 <HospitalCard
-                  key={`${hospital["Hospital Name"]}-${hospital.City}`}
+                  key={hospital["Hospital Name"]}
                   details={hospital}
                   availableSlots={availableSlots}
                   handleBooking={handleBookingModal}

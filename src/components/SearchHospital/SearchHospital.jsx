@@ -1,62 +1,63 @@
-import {
-  MenuItem,
-  Select,
-  Button,
-  InputAdornment,
-  Box,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { MenuItem, Select, Button, InputAdornment, Box } from "@mui/material";
+import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-// Component to search the hospitals based on State and City selection.
-export default function SearchHospital({
-  selectedState,
-  selectedCity,
-  onStateChange, // Use onStateChange callback
-  onCityChange, // Use onCityChange callback
-  onSearch, // Use onSearch callback
-  states, // Receive states and cities as props
-  cities,
-  isStatesLoading, // Receive loading states as props
-  isCitiesLoading,
-}) {
-  const handleStateChange = useCallback(
-    (e) => {
-      const newState = e.target.value;
-      if (onStateChange) {
-        onStateChange(newState);
+//Component to search the hospitals based on State and City selection.
+//API used to fetch details of hospital and set the values in formData
+export default function SearchHospital() {
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [formData, setFormData] = useState({ state: "", city: "" });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get(
+          "https://meddata-backend.onrender.com/states"
+        );
+        setStates(response.data);
+      } catch (error) {
+        console.error("Error fetching states:", error);
       }
-    },
-    [onStateChange]
-  );
+    };
 
-  const handleCityChange = useCallback(
-    (e) => {
-      const newCity = e.target.value;
-      if (onCityChange) {
-        onCityChange(newCity);
+    fetchStates();
+  }, []);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      setCities([]);
+      setFormData((prev) => ({ ...prev, city: "" }));
+      try {
+        const data = await axios.get(
+          `https://meddata-backend.onrender.com/cities/${formData.state}`
+        );
+        setCities(data.data);
+        // console.log("city", data.data);
+      } catch (error) {
+        console.log("Error in fetching city:", error);
       }
-    },
-    [onCityChange]
-  );
+    };
 
-  const handleSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
-      if (onSearch) {
-        onSearch(selectedState, selectedCity);
-      }
-    },
-    [onSearch, selectedState, selectedCity]
-  );
+    if (formData.state != "") {
+      fetchCities();
+    }
+  }, [formData.state]);
 
-  const formKey = useMemo(() => `${selectedState}-${selectedCity}`, [
-    selectedState,
-    selectedCity,
-  ]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.state && formData.city) {
+      navigate(`/search?state=${formData.state}&city=${formData.city}`);
+    }
+  };
 
   return (
     <Box
@@ -68,64 +69,54 @@ export default function SearchHospital({
         justifyContent: "space-between",
         flexDirection: { xs: "column", md: "row" },
       }}
-      key={formKey}
     >
-      <FormControl fullWidth>
-        <InputLabel id="state-label">State</InputLabel>
-        <Select
-          labelId="state-label"
-          id="state"
-          name="state"
-          value={selectedState}
-          onChange={handleStateChange}
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          }
-          label="State"
-          data-testid="state-select"
-          required
-          disabled={isStatesLoading}
-        >
-          <MenuItem disabled value="">
-            State
+      <Select
+        displayEmpty
+        id="state"
+        name="state"
+        value={formData.state}
+        onChange={handleChange}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        }
+        required
+        sx={{ minWidth: 200, width: "100%" }}
+      >
+        <MenuItem disabled value="" selected>
+          State
+        </MenuItem>
+        {states.map((state) => (
+          <MenuItem key={state} value={state}>
+            {state}
           </MenuItem>
-          {states.map((state) => (
-            <MenuItem key={state} value={state}>
-              {state}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        ))}
+      </Select>
 
-      <FormControl fullWidth disabled={!selectedState || isCitiesLoading}>
-        <InputLabel id="city-label">City</InputLabel>
-        <Select
-          labelId="city-label"
-          id="city"
-          name="city"
-          value={selectedCity}
-          onChange={handleCityChange}
-          startAdornment={
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          }
-          label="City"
-          data-testid="city-select"
-          required
-        >
-          <MenuItem disabled value="">
-            City
+      <Select
+        displayEmpty
+        id="city"
+        name="city"
+        value={formData.city}
+        onChange={handleChange}
+        startAdornment={
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        }
+        required
+        sx={{ minWidth: 200, width: "100%" }}
+      >
+        <MenuItem disabled value="" selected>
+          City
+        </MenuItem>
+        {cities.map((city) => (
+          <MenuItem key={city} value={city}>
+            {city}
           </MenuItem>
-          {cities.map((city) => (
-            <MenuItem key={city} value={city}>
-              {city}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+        ))}
+      </Select>
 
       <Button
         type="submit"

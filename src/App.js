@@ -3,13 +3,12 @@ import { Outlet } from "react-router-dom";
 import { CssBaseline } from "@mui/material";
 import Footer from "./components/Footer/Footer";
 import DownloadApp from "./components/Sections/DownloadApp/DownloadApp";
-import { useState } from "react";
-// import Search from "./Search/Search"; // Remove this import
+// import { useState } from "react"; // Remove this import as state is no longer needed here
 
 function App() {
-  const [appState, setAppState] = useState('');
-  const [appCity, setAppCity] = useState('');
-  const [searchParams, setSearchParams] = useState({});
+  // const [appState, setAppState] = useState(''); // Remove
+  // const [appCity, setAppCity] = useState(''); // Remove
+  // const [searchParams, setSearchParams] = useState({}); // Remove
 
   return (
     <div>

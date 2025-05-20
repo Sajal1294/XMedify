@@ -58,7 +58,9 @@ export default function HospitalCard({
             >
               Free
             </Typography>
-            <Typography sx={{ textDecoration: "line-through", color: "#787887" }}>
+            <Typography
+              sx={{ textDecoration: "line-through", color: "#787887" }}
+            >
               ₹500
             </Typography>
             <Typography>Consultation fee at clinic</Typography>
@@ -132,7 +134,7 @@ export default function HospitalCard({
                 }}
               />
               <Chip
-                label={format(new Date(details.bookingDate), "dd MMMM yyyy")} // Corrected date formatting
+                label={format(new Date(details.bookingDate), "dd MMMM yyyy")}
                 variant="outlined"
                 color="success"
                 sx={{

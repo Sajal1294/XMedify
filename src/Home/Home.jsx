@@ -1,6 +1,6 @@
-// Home.jsx
 import { Container, Box, Stack } from "@mui/material";
 import HeroSlider from "../components/HeroSlider/HeroSlider";
+import SearchHospital from "../components/SearchHospital/SearchHospital";
 import FAQs from "../components/Sections/FAQs/FAQs";
 import OurFamilies from "../components/Sections/OurFamilies/OurFamilies";
 import Blogs from "../components/Sections/Blogs/Blogs";
@@ -10,7 +10,6 @@ import Specialization from "../components/Sections/Specialization/Specialization
 import Offers from "../components/Sections/Offers/Offers";
 import NavBar from "../components/NavBar/NavBar";
 import HeroServices from "../components/IconLayout/HeroServices";
-import Search from "../Search/Search";
 
 export default function Home() {
   return (
@@ -32,17 +31,11 @@ export default function Home() {
             zIndex={99}
             bgcolor="#fff"
             borderRadius="15px"
-            spacing={2}
+            spacing={10}
             boxShadow="0 0 12px rgba(0,0,0,0.1)"
-            direction={{ xs: 'column', md: 'row' }}
-            alignItems={{ md: 'center' }}
           >
-            <Box flex={1}>
-              <Search/>
-            </Box>
-            <Box sx={{ mt: { xs: 2, md: 0 } }}>
-              <HeroServices />
-            </Box>
+            <SearchHospital />
+            <HeroServices />
           </Stack>
         </Container>
       </Box>
