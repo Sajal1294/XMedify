@@ -125,6 +125,7 @@ export default function SearchHospital() {
         startIcon={<SearchIcon />}
         sx={{ py: "15px", px: 8, flexShrink: 0 }}
         disableElevation
+        id="searchBtn" // Added ID for Cypress test to find the button
       >
         Search
       </Button>
